@@ -16,7 +16,7 @@ spaces = skipMany1 space
 readExpr :: String -> String
 readExpr input = case parse parseExpr "lisp" input of
   Left err -> "No Match: " ++ show err
-  Right val -> "Valid Value found: " ++ show val
+  Right val -> "Parsed successfully. Found: " ++ show val
                   
 data LispVal = Atom String
              | List [LispVal]
