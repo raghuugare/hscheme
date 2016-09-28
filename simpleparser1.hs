@@ -11,6 +11,6 @@ symbol = oneOf "!$%&|*+-/:<=?>@^_~#"
 
 readExpr :: String -> String
 readExpr input = case parse symbol "lisp" input of
-  Left err -> "No Match! " ++ show err
-  Right val -> "Valid Value found!"
+  Left err -> "No Match: " ++ show err
+  Right val -> "Valid Value found: " ++ show val
                   
