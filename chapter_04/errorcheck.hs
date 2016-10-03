@@ -85,6 +85,24 @@ data LispError   = NumArgs Integer [LispVal]
                  | UnboundVar String String
                  | Default String
 
+instance Show LispError where show = showError
+
+showError :: LispError -> String
+showError (UnboundVar message varName) = message ++ ": " ++ varName
+showError (BadSpecialForm message form) = message ++ ": " ++ show form
+showError (NotFunction message func) = message ++ ": " ++ show func
+showError (NumArgs expected found) = "Expected " ++ show expected  ++ "args: found values" ++ unwordsList found
+showError (TypeMismatch expected found) = "Invalid type: expected " ++ expected ++ " , found " ++ show found
+showError (Parser parseErr ) = " Parse error at " ++ show par s eEr r
+
+instance Show LispError where show = showError
+
+instance Error LispError where
+noMsg = Default " An error has occurred "
+strMsg = Default
+
+type ThrowsError = Either LispError
+
 parseString :: Parser LispVal
 parseString = do char '"'
                  x <- many (noneOf "\"")
