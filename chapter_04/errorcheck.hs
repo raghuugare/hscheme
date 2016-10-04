@@ -64,15 +64,15 @@ primitives = [("+",         numericBinop (+)),
 
 numericBinop :: (Integer -> Integer -> Integer) -> [LispVal] -> ThrowsError LispVal
 numericBinop op singleVal@[_]  = throwError $ NumArgs 2 singleVal 
-numericBinop op params         = mapM unpackNum params >>= return . Number . fold1 op 
+numericBinop op params         = mapM unpackNum params >>= return . Number . foldl1 op 
 
 unpackNum :: LispVal -> ThrowsError Integer
 unpackNum (Number n) = return n
 unpackNum (String n) = let parsed = reads n in
-                         if null parsed then throwError $ TypeMismatch $ String n
+                         if null parsed then throwError $ TypeMismatch "number" $ String n
                          else return $ fst $ parsed !! 0
 unpackNum (List [n]) = unpackNum n
-unpackNum notNum = throwError $TypeMismatch "number" notNum
+unpackNum notNum = throwError $ TypeMismatch "number" notNum
 
 unwordsList :: [LispVal] -> String
 unwordsList = unwords . map showVal
@@ -85,23 +85,26 @@ data LispError   = NumArgs Integer [LispVal]
                  | UnboundVar String String
                  | Default String
 
-instance Show LispError where show = showError
-
 showError :: LispError -> String
 showError (UnboundVar message varName) = message ++ ": " ++ varName
 showError (BadSpecialForm message form) = message ++ ": " ++ show form
 showError (NotFunction message func) = message ++ ": " ++ show func
-showError (NumArgs expected found) = "Expected " ++ show expected  ++ "args: found values" ++ unwordsList found
+showError (NumArgs expected found) = "Expected " ++ show expected  ++ " args! Found values " ++ unwordsList found
 showError (TypeMismatch expected found) = "Invalid type: expected " ++ expected ++ " , found " ++ show found
-showError (Parser parseErr ) = " Parse error at " ++ show par s eEr r
+showError (Parser parseErr) = "Parse error at " ++ show parseErr
 
 instance Show LispError where show = showError
 
 instance Error LispError where
-noMsg = Default " An error has occurred "
+noMsg = Default "An error has occurred "
 strMsg = Default
 
 type ThrowsError = Either LispError
+
+trapError action = catchError action (return . show)
+
+extractValue :: ThrowsError a -> a
+extractValue (Right val ) = val
 
 parseString :: Parser LispVal
 parseString = do char '"'
